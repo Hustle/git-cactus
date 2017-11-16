@@ -1,0 +1,32 @@
+{
+  "name": "cactus",
+  "version": "1.0.0",
+  "description": "A opinionated tool for cutting releases",
+  "main": "index.js",
+  "bin": {
+    "git-cactus": "index.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HustleInc/roberto.git"
+  },
+  "keywords": [
+    "git",
+    "releases"
+  ],
+  "author": "Tyler Brock",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/HustleInc/roberto/issues"
+  },
+  "homepage": "https://github.com/HustleInc/roberto#readme",
+  "dependencies": {
+    "nodegit": "^0.20.3",
+    "tmp": "0.0.33",
+    "winston": "^2.4.0",
+    "yargs": "^10.0.3"
+  }
+}
