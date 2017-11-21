@@ -12,7 +12,13 @@ const exec = util.promisify(cp.exec);
 
 logger.cli();
 
-function makeOpts() {
+function wrap(fn) {
+  return function(args) {
+    fn(args).then(logger.info, logger.error);
+  }
+}
+
+function makeGitOpts() {
   return {
     callbacks: {
       certificateCheck: () => 1,
@@ -38,7 +44,7 @@ async function cutReleaseBranch(args) {
 
   // Create tempdir and clone fresh copy
   const tmpdir = tmp.dirSync({ unsafeCleanup: true });
-  const options = { fetchOpts: makeOpts() }
+  const options = { fetchOpts: makeGitOpts() }
 
   // Clone a fresh copy of the repository
   const clonedRepo = await Git.Clone(url, tmpdir.name, options);
@@ -56,7 +62,7 @@ async function cutReleaseBranch(args) {
     `refs/heads/master:refs/heads/master`,
     `refs/heads/master:refs/heads/${versionInfo.releaseBranchName}`,
     `refs/tags/v${versionInfo.version}:refs/tags/v${versionInfo.version}`,
-  ], makeOpts());
+  ], makeGitOpts());
 
   return 'Done!';
 }
@@ -74,16 +80,17 @@ async function tagVersion(args) {
   await remote.push([
     `refs/heads/${versionInfo.releaseBranchName}:refs/heads/${versionInfo.releaseBranchName}`,
     `refs/tags/v${versionInfo.version}:refs/tags/v${versionInfo.version}`,
-  ], makeOpts());
+  ], makeGitOpts());
 
   return 'Done!';
 }
 
 yargs
+  .usage('git cactus <command>')
   .demandCommand(1, 'You need to provide a cactus command')
-  .command('cut', 'cuts a release branch', () => {}, cutReleaseBranch)
-  .command('tag', 'tags a version', () => {}, tagVersion)
-  .option('upstream', { default: 'origin', describe: 'upstream remote name'})
+  .command('cut', 'cuts a release branch from origin/master', () => {}, wrap(cutReleaseBranch))
+  .command('tag', 'tags a version on a release branch', () => {}, wrap(tagVersion))
+  .option('upstream', { default: 'origin', describe: 'Upstream remote name'})
   .example('git cactus cut', 'Cuts a new release branch (minor)')
   .example('git cactus tag', 'Tags a new version (patch)')
   .argv
