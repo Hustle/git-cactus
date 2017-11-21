@@ -1,4 +1,4 @@
-# git-cactus
+# 🌵 git-cactus 🌵
 
 `git-cactus` is a git management tool that supports the [cactus branching model](https://barro.github.io/2016/02/a-succesful-git-branching-model-considered-harmful/).
 
