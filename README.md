@@ -2,13 +2,13 @@
 
 `git-cactus` is a git management tool that supports the [Cactus branching model](https://barro.github.io/2016/02/a-succesful-git-branching-model-considered-harmful/).
 
-### Installation
+## Installation
 
 ```sh
 $ npm install -g git-cactus
 ```
 
-### Usage
+## Usage
 
 `git-cactus` is invoked as a git subcommand like this: `git cactus` (note the space!)
 
@@ -20,14 +20,14 @@ If you want help you can run `git cactus` without any arguments or with the `hel
 
 Warning: Adding a `--help` flag will make git try to open a man page (which doesn't yet exist).
 
-#### TLDR
+### TLDR
 
 ```sh
 $ git cactus cut # cuts a release
 $ git cactus tag # tags a version
 ```
 
-#### Cutting a Release Branch
+### Cutting a Release Branch
 
 Cutting a release branch is used to branch code off of origin's master. Teams typically do
 this when they want to make a snapshot of the branch where development happens to do QA
@@ -67,7 +67,7 @@ This opinionated but necessary to avoid common errors and frustrations:
  - [Source of Error] Depending on an engineer's local master branch state
  - [Source of Frust] Cutting a release branch interrupts flow by requiring clean git state
 
-#### Tagging a Version
+### Tagging a Version
 
 Tagging a version is typically done when you want to apply a hotfix to the current release.
 
