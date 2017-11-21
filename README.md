@@ -1,6 +1,6 @@
 # 🌵 git-cactus 🌵
 
-`git-cactus` is a git management tool that supports the [Cactus branching model](https://barro.github.io/2016/02/a-succesful-git-branching-model-considered-harmful/).
+`git-cactus` is a git management tool that supports the [Cactus Branching Model](https://barro.github.io/2016/02/a-succesful-git-branching-model-considered-harmful/).
 
 ## Installation
 
