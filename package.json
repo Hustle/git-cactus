@@ -1,5 +1,5 @@
 {
-  "name": "cactus",
+  "name": "git-cactus",
   "version": "1.0.0",
   "description": "A opinionated tool for cutting releases",
   "main": "index.js",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HustleInc/roberto.git"
+    "url": "git+https://github.com/HustleInc/git-cactus.git"
   },
   "keywords": [
     "git",
@@ -20,9 +20,9 @@
   "author": "Tyler Brock",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/HustleInc/roberto/issues"
+    "url": "https://github.com/HustleInc/git-cactus/issues"
   },
-  "homepage": "https://github.com/HustleInc/roberto#readme",
+  "homepage": "https://github.com/HustleInc/git-cactus#readme",
   "dependencies": {
     "nodegit": "^0.20.3",
     "tmp": "0.0.33",
