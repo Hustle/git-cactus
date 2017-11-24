@@ -51,7 +51,7 @@ async function cutReleaseBranch(args) {
   const clonedRemote = await clonedRepo.getRemote('origin');
 
   // Shell out to run npm version inside tempdir
-  await exec('npm version minor -m "Release v%s"', { cwd: tmpdir.name });
+  await exec(`npm version ${args.level} -m "Release v%s"`, { cwd: tmpdir.name });
 
   // Determine new version and branch names
   const versionInfo = getNextVersionInfo(tmpdir.name);
@@ -88,8 +88,18 @@ async function tagVersion(args) {
 yargs
   .usage('git cactus <command>')
   .demandCommand(1, 'You need to provide a cactus command')
-  .command('cut', 'cuts a release branch from origin/master', () => {}, wrap(cutReleaseBranch))
-  .command('tag', 'tags a version on a release branch', () => {}, wrap(tagVersion))
+  .command('cut [level]', 'cuts a release branch from origin/master', (yargs) => {
+    yargs
+      .positional('level', {
+        choices: ['major', 'minor'],
+        default: 'minor',
+        describe: 'The level of the release'
+      });
+  }, wrap(cutReleaseBranch))
+  .command('tag', 'tags a version on a release branch', (yargs) => {
+
+  }, wrap(tagVersion))
+  .group(['upstream'], 'Git Options:')
   .option('upstream', { default: 'origin', describe: 'Upstream remote name'})
   .example('git cactus cut', 'Cuts a new release branch (minor)')
   .example('git cactus tag', 'Tags a new version (patch)')
