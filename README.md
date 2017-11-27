@@ -7,6 +7,8 @@
 ### Prerequisites
  - Working toolchain (nodegit uses libgit which is a native extension)
 
+### Procedure
+
 ```sh
 $ npm install -g git-cactus
 ```
