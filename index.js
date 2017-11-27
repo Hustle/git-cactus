@@ -50,11 +50,14 @@ function makeGitOpts(credentials) {
   const options = {
     callbacks: { certificateCheck: () => 1 }
   };
+
   if (credentials) {
+    // If we have credentials, use them
     options.callbacks.credentials = (url, username) => {
       return Git.Cred.userpassPlaintextNew(credentials.username, credentials.password);
     }
   } else {
+    // If we don't have credentials try to get an ssh key from the agent
     options.callbacks.credentials = (url, username) => {
       return Git.Cred.sshKeyFromAgent(username)
     }
@@ -133,9 +136,7 @@ yargs
         describe: 'The level of the release'
       });
   }, wrap(cutReleaseBranch))
-  .command('tag', 'tags a version on a release branch', (yargs) => {
-
-  }, wrap(tagVersion))
+  .command('tag', 'tags a version on a release branch', () => {}, wrap(tagVersion))
   .group(['upstream'], 'Git Options:')
   .option('upstream', { default: 'origin', describe: 'Upstream remote name'})
   .example('git cactus cut', 'Cuts a new release branch (minor)')
