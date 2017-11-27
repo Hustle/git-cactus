@@ -7,8 +7,11 @@ const yargs = require('yargs');
 const logger = require('winston');
 const semver = require('semver');
 const Git = require('nodegit');
+var GCH = require('git-credential-helper');
 
 const exec = util.promisify(cp.exec);
+const gchAvailable = util.promisify(GCH.available);
+const gchFill = util.promisify(GCH.fill);
 
 logger.cli();
 
@@ -18,13 +21,45 @@ function wrap(fn) {
   }
 }
 
-function makeGitOpts() {
-  return {
-    callbacks: {
-      certificateCheck: () => 1,
-      credentials: (url, username) => Git.Cred.sshKeyFromAgent(username)
+async function getCreds(remote) {
+  const url = remote.url();
+  const credentialHelperAvailable = await gchAvailable();
+
+  const promise = new Promise((resolve, reject) => {
+    if (url.startsWith('git')) {
+      return resolve(null);
     }
+
+    if (!credentialHelperAvailable) {
+      return reject("Using https remote but git credentials helper not available!");
+    }
+
+    GCH.fill(url, (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(data);
+      }
+    }, { silent: true });
+  });
+
+  return promise;
+}
+
+function makeGitOpts(credentials) {
+  const options = {
+    callbacks: { certificateCheck: () => 1 }
   };
+  if (credentials) {
+    options.callbacks.credentials = (url, username) => {
+      return Git.Cred.userpassPlaintextNew(credentials.username, credentials.password);
+    }
+  } else {
+    options.callbacks.credentials = (url, username) => {
+      return Git.Cred.sshKeyFromAgent(username)
+    }
+  }
+  return options;
 }
 
 // HACK: run require of pacakge.json after using npm to manipulate it
@@ -40,11 +75,12 @@ async function cutReleaseBranch(args) {
   // Get upstream remote for current repo
   const repo = await Git.Repository.open('.');
   const remote = await repo.getRemote(args.upstream);
+  const credentials = await getCreds(remote);
   const url = remote.url();
 
   // Create tempdir and clone fresh copy
   const tmpdir = tmp.dirSync({ unsafeCleanup: true });
-  const options = { fetchOpts: makeGitOpts() }
+  const options = { fetchOpts: makeGitOpts(credentials) }
 
   // Clone a fresh copy of the repository
   const clonedRepo = await Git.Clone(url, tmpdir.name, options);
@@ -62,7 +98,7 @@ async function cutReleaseBranch(args) {
     `refs/heads/master:refs/heads/master`,
     `refs/heads/master:refs/heads/${versionInfo.releaseBranchName}`,
     `refs/tags/v${versionInfo.version}:refs/tags/v${versionInfo.version}`,
-  ], makeGitOpts());
+  ], makeGitOpts(credentials));
 
   return 'Done!';
 }
@@ -71,6 +107,7 @@ async function tagVersion(args) {
   // Get upstream remote for current repo
   const repo = await Git.Repository.open('.');
   const remote = await repo.getRemote(args.upstream);
+  const credentials = await getCreds(remote);
 
   // Shell out to run npm version
   await exec('npm version patch -m "Release v%s"');
@@ -80,7 +117,7 @@ async function tagVersion(args) {
   await remote.push([
     `refs/heads/${versionInfo.releaseBranchName}:refs/heads/${versionInfo.releaseBranchName}`,
     `refs/tags/v${versionInfo.version}:refs/tags/v${versionInfo.version}`,
-  ], makeGitOpts());
+  ], makeGitOpts(credentials));
 
   return 'Done!';
 }

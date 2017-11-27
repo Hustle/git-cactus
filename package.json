@@ -24,6 +24,7 @@
   },
   "homepage": "https://github.com/HustleInc/git-cactus#readme",
   "dependencies": {
+    "git-credential-helper": "0.0.1",
     "nodegit": "^0.20.3",
     "tmp": "0.0.33",
     "winston": "^2.4.0",
