@@ -5,7 +5,8 @@
 ## Installation
 
 ### Prerequisites
- - Working toolchain (nodegit uses libgit which is a native extension)
+ - Node 8+ for now
+ - Working C toolchain (nodegit uses libgit2)
 
 ### Procedure
 
