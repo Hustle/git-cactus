@@ -7,9 +7,22 @@ const yargs = require('yargs');
 const logger = require('winston');
 const semver = require('semver');
 const Git = require('nodegit');
-var GCH = require('git-credential-helper');
+const GCH = require('git-credential-helper');
 
-const exec = util.promisify(cp.exec);
+// Custom fill promisification because callback is not final argument
+GCH.fill[util.promisify.custom] = function(url, options) {
+  return new Promise((resolve, reject) => {
+    GCH.fill(url, (err, data) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(data);
+      }
+    }, options);
+  });
+}
+
+// Promisify apis that have cb style
 const gchAvailable = util.promisify(GCH.available);
 const gchFill = util.promisify(GCH.fill);
 
@@ -25,25 +38,15 @@ async function getCreds(remote) {
   const url = remote.url();
   const credentialHelperAvailable = await gchAvailable();
 
-  const promise = new Promise((resolve, reject) => {
-    if (url.startsWith('git')) {
-      return resolve(null);
-    }
+  if (url.startsWith('git')) {
+    return null;
+  }
 
-    if (!credentialHelperAvailable) {
-      return reject("Using https remote but git credentials helper not available!");
-    }
+  if (!credentialHelperAvailable) {
+    throw new Error("Using https remote but git credentials helper not available!");
+  }
 
-    GCH.fill(url, (err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data);
-      }
-    }, { silent: true });
-  });
-
-  return promise;
+  return gchFill(url, { silent: true });
 }
 
 function makeGitOpts(credentials) {
@@ -90,7 +93,7 @@ async function cutReleaseBranch(args) {
   const clonedRemote = await clonedRepo.getRemote('origin');
 
   // Shell out to run npm version inside tempdir
-  await exec(`npm version ${args.level} -m "Release v%s"`, { cwd: tmpdir.name });
+  cp.execSync(`npm version ${args.level} -m "Release v%s"`, { cwd: tmpdir.name });
 
   // Determine new version and branch names
   const versionInfo = getNextVersionInfo(tmpdir.name);
@@ -113,7 +116,7 @@ async function tagVersion(args) {
   const credentials = await getCreds(remote);
 
   // Shell out to run npm version
-  await exec('npm version patch -m "Release v%s"');
+  cp.execSync('npm version patch -m "Release v%s"');
   const versionInfo = getNextVersionInfo(process.cwd());
 
   // Push updated release branch and new tag
