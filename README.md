@@ -7,6 +7,7 @@
 ### Prerequisites
  - Node 8+ for now
  - Working C toolchain (nodegit uses libgit2)
+   - On a Mac do `xcode-select --install`
 
 ### Procedure
 
