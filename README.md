@@ -5,6 +5,8 @@
 ## Installation
 
 ### Prerequisites
+ - Working credentials to targeted remote git repo(s)
+   - On a Mac do `ssh-add -K <path to ssh credentials>`
  - Node 8+ for now
  - Working C toolchain (nodegit uses libgit2)
    - On a Mac do `xcode-select --install`

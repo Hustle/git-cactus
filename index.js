@@ -9,6 +9,8 @@ const semver = require('semver');
 const Git = require('nodegit');
 const GCH = require('git-credential-helper');
 
+const RELEASE_PREFIX = 'release-';
+
 // Custom fill promisification because callback is not final argument
 GCH.fill[util.promisify.custom] = function(url, options) {
   return new Promise((resolve, reject) => {
@@ -73,7 +75,7 @@ function getNextVersionInfo(packageJSONPath) {
   const pkg = require(`${packageJSONPath}/package.json`);
   const version = pkg.version;
   const minorVer = `v${semver.major(version)}.${semver.minor(version)}`;
-  const releaseBranchName = `release-${minorVer}`;
+  const releaseBranchName = `${RELEASE_PREFIX}${minorVer}`;
   return { version, minorVer, releaseBranchName };
 }
 
@@ -128,6 +130,16 @@ async function tagVersion(args) {
   return 'Done!';
 }
 
+// TODO:
+// - list all branches on upstream
+// - sort by RELEASE_PREFIX
+// - select one previous to current version
+// - git shortlog currentBranch...previousBranch
+// - generate github url to this effect
+async function createReleaseNotes(args) {
+  return 'IMPLEMENT ME!';
+}
+
 yargs
   .usage('git cactus <command>')
   .demandCommand(1, 'You need to provide a cactus command')
@@ -140,8 +152,10 @@ yargs
       });
   }, wrap(cutReleaseBranch))
   .command('tag', 'tags a version on a release branch', () => {}, wrap(tagVersion))
+  .command('notes', 'generates release notes ', () => {}, wrap(createReleaseNotes))
   .group(['upstream'], 'Git Options:')
   .option('upstream', { default: 'origin', describe: 'Upstream remote name'})
   .example('git cactus cut', 'Cuts a new release branch (minor)')
   .example('git cactus tag', 'Tags a new version (patch)')
+  .example('git cactus notes', 'Creates current release notes')
   .argv
