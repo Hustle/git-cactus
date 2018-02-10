@@ -143,7 +143,7 @@ async function cutReleaseBranch(args) {
   repo.refreshIndex();
 
   if (!approval.lgtm) {
-    return 'Aborted push! Local changes not reverted, you must now do surgery!';
+    return 'Aborted branch cut! Phew, that was a close one...';
   }
 
   // Push master, the release branch, and tag
