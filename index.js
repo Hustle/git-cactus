@@ -80,10 +80,16 @@ function getVersion(repoPath) {
   return pkg.version;
 }
 
-function generateNextVersion(currentVersion, level) {
-  const version = semver.inc(currentVersion, level)
+function generateNextVersion(currentVersion, level, preId) {
+  const version = semver.inc(currentVersion, level, preId);
   const minorVer = `v${semver.major(version)}.${semver.minor(version)}`;
-  const releaseBranchName = `release-${minorVer}`;
+  const prerelease = semver.prerelease(version);
+  let releaseBranchName = `release-${minorVer}`;
+
+  if (prerelease !== null) {
+    releaseBranchName += `-${prerelease[0]}`;
+  }
+
   return { version, minorVer, releaseBranchName };
 }
 
@@ -132,7 +138,7 @@ async function cutReleaseBranch(args) {
 
   // Determine new version and branch names
   const currentVersion = getVersion(tmpdir.name);
-  const versionInfo = generateNextVersion(currentVersion, args.level);
+  const versionInfo = generateNextVersion(currentVersion, args.level, args.preid);
 
   // Ask for approval on diff before cutting
   logger.info('Cutting branch', versionInfo.releaseBranchName);
@@ -194,9 +200,13 @@ yargs
   .command('cut [level]', 'cuts a release branch from origin/master', (yargs) => {
     yargs
       .positional('level', {
-        choices: ['major', 'minor'],
+        choices: ['major', 'minor', 'premajor', 'preminor'],
         default: 'minor',
         describe: 'The level of the release'
+      })
+      .option('preid', {
+        describe: 'Add preid to prereleases',
+        type: 'string'
       });
   }, wrap(cutReleaseBranch))
   .command('tag', 'tags a version on a release branch', () => {}, wrap(tagVersion))
