@@ -139,6 +139,7 @@ async function cutReleaseBranch(args) {
   // Determine new version and branch names
   const currentVersion = getVersion(tmpdir.name);
   const versionInfo = generateNextVersion(currentVersion, args.level, args.preid);
+  logger.info('Incrementing', currentVersion, 'to', versionInfo.version);
 
   // Ask for approval on diff before cutting
   logger.info('Cutting branch', versionInfo.releaseBranchName);
