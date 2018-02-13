@@ -201,7 +201,7 @@ yargs
   .command('cut [level]', 'cuts a release branch from origin/master', (yargs) => {
     yargs
       .positional('level', {
-        choices: ['major', 'minor', 'premajor', 'preminor'],
+        choices: ['major', 'minor', 'premajor', 'preminor', 'prerelease'],
         default: 'minor',
         describe: 'The level of the release'
       })
