@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 const tmp = require('tmp');
 const util = require('util');
 const cp = require('child_process');
@@ -29,12 +27,6 @@ GCH.fill[util.promisify.custom] = function(url, options) {
 // Promisify apis that have cb style
 const gchAvailable = util.promisify(GCH.available);
 const gchFill = util.promisify(GCH.fill);
-
-function wrap(fn) {
-  return function(args) {
-    fn(args).then(logger.info, logger.error);
-  }
-}
 
 async function getCreds(remote) {
   const url = remote.url();
@@ -80,10 +72,12 @@ function getVersion(repoPath) {
   return pkg.version;
 }
 
+// Generates the next release version given the curent version and the next level
+// Level can be 'major' or 'minor'
 function generateNextVersion(currentVersion, level) {
   const version = semver.inc(currentVersion, level)
-  const minorVer = `v${semver.major(version)}.${semver.minor(version)}`;
-  const releaseBranchName = `release-${minorVer}`;
+  const minorVer = `${semver.major(version)}.${semver.minor(version)}`;
+  const releaseBranchName = `release-v${minorVer}`;
   return { version, minorVer, releaseBranchName };
 }
 
@@ -188,20 +182,9 @@ async function tagVersion(args) {
   return 'Done!';
 }
 
-yargs
-  .usage('git cactus <command>')
-  .demandCommand(1, 'You need to provide a cactus command')
-  .command('cut [level]', 'cuts a release branch from origin/master', (yargs) => {
-    yargs
-      .positional('level', {
-        choices: ['major', 'minor'],
-        default: 'minor',
-        describe: 'The level of the release'
-      });
-  }, wrap(cutReleaseBranch))
-  .command('tag', 'tags a version on a release branch', () => {}, wrap(tagVersion))
-  .group(['upstream'], 'Git Options:')
-  .option('upstream', { default: 'origin', describe: 'Upstream remote name'})
-  .example('git cactus cut', 'Cuts a new release branch (minor)')
-  .example('git cactus tag', 'Tags a new version (patch)')
-  .argv
+// Exported for testing
+module.exports = {
+  generateNextVersion,
+  cutReleaseBranch,
+  tagVersion,
+}
