@@ -13,9 +13,13 @@ yargs
   .command('cut [level]', 'cuts a release branch from origin/master', (yargs) => {
     yargs
       .positional('level', {
-        choices: ['major', 'minor'],
+        choices: ['major', 'minor', 'premajor', 'preminor', 'prerelease'],
         default: 'minor',
         describe: 'The level of the release'
+      })
+      .option('preid', {
+        describe: 'Add preid to prereleases',
+        type: 'string'
       });
   }, wrap(cactus.cutReleaseBranch))
   .command('tag', 'tags a version on a release branch', () => {}, wrap(cactus.tagVersion))
