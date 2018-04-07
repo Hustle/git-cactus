@@ -2,7 +2,7 @@
 
 `git-cactus` is a git management tool that supports the [Cactus Branching Model](https://barro.github.io/2016/02/a-succesful-git-branching-model-considered-harmful/).
 
-Build Status: [![CircleCI](https://circleci.com/gh/HustleInc/git-cactus/tree/master.svg?style=svg)](https://circleci.com/gh/HustleInc/git-cactus/tree/master) 
+Build Status: [![CircleCI](https://circleci.com/gh/HustleInc/git-cactus/tree/master.svg?style=svg)](https://circleci.com/gh/HustleInc/git-cactus/tree/master)
 
 ## Installation
 
@@ -31,13 +31,6 @@ If you want help you can run `git cactus` without any arguments or with the `hel
 
 Warning: Adding a `--help` flag will make git try to open a man page (which doesn't yet exist).
 
-### TLDR
-
-```sh
-$ git cactus cut # cuts a release
-$ git cactus tag # tags a version
-```
-
 ### Cutting a Release Branch
 
 Cutting a release branch is used to branch code off of origin's master. Teams typically do
@@ -49,7 +42,7 @@ Running the operation is fairly simple:
 
 ```sh
 $ cd <repository>
-$ git cactus cut
+$ git cactus cut [level]
 ```
 
 If the master branch's package.json version is currently v1.2.0 (last release) cutting a release
@@ -64,12 +57,6 @@ branch will:
   - Push changes to `master` branch
   - Push new release branch `release-v1.3`
   - Push tag `v1.3.0`
-
-If you don't use origin as the name of your upstream remote you can specify another:
-
-```
-git cactus cut --upstream my-upstream
-```
 
 Don't worry about working state! Git cactus will clone the repository you run the command in
 to a temporary directory (`/tmp/xxx/`) and run the necessary operations there (including cleanup).
@@ -107,3 +94,30 @@ Tagging a release version will:
     - tag as v1.3.1
  - Pushing the update release branch `release-v1.3`
  - Pushing tag `v1.3.1`
+
+## Options
+
+### upstream
+Type: `String`
+Default value: `origin`
+
+If you don't use origin as the name of your upstream remote you can specify
+another, e.g. `git cactus cut --upstream upstream`
+
+### version
+Type: `Boolean`
+Default value: `false`
+
+Show version number of current directory.
+
+### preid
+Type: `String`
+Default value: none
+
+If you are cutting a branch using prerelease levels, you can optionally pass a
+preid. This preid will be prepended to the prerelease patch number. For example,
+to increment a prerelease of v1.0.0-beta.0:
+
+```sh
+git cactus cut premajor --preid beta
+```
