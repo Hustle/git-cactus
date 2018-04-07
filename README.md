@@ -2,6 +2,8 @@
 
 `git-cactus` is a git management tool that supports the [Cactus Branching Model](https://barro.github.io/2016/02/a-succesful-git-branching-model-considered-harmful/).
 
+Build Status: [![CircleCI](https://circleci.com/gh/HustleInc/git-cactus/tree/master.svg?style=svg)](https://circleci.com/gh/HustleInc/git-cactus/tree/master) 
+
 ## Installation
 
 ### Prerequisites
@@ -15,7 +17,7 @@
 $ npm install -g git-cactus
 ```
 
-On Arch Linux, because nodegit's precompiled binary was compiled against an outdated version of libcurl, you must install it from source. See [this nodegit issue](https://github.com/nodegit/nodegit/issues/1225) for details.
+On Arch Linux, because nodegit's precompiled binary was compiled against an outdated version of libcurl, you must build it from source. See [this nodegit issue](https://github.com/nodegit/nodegit/issues/1225) for details. After running `npm install -g git-cactus`, change to the directory where `git-cactus` was installed and run `BUILD_ONLY=1 npm install nodegit`.
 
 ## Usage
 

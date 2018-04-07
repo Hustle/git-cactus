@@ -1,0 +1,14 @@
+version: 2
+
+jobs:
+  build:
+    docker:
+      - image: hustleinc/ci-base-nodegit
+    steps:
+      - checkout
+      - run:
+          name: Install Dependencies
+          command: npm install --no-progress
+      - run:
+          name: Run Tests
+          command: npm test

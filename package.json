@@ -4,10 +4,10 @@
   "description": "A opinionated tool for cutting releases",
   "main": "index.js",
   "bin": {
-    "git-cactus": "index.js"
+    "git-cactus": "src/index.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jasmine"
   },
   "repository": {
     "type": "git",
@@ -33,5 +33,8 @@
   },
   "engines": {
     "node": ">=8.0.0"
+  },
+  "devDependencies": {
+    "jasmine": "^3.1.0"
   }
 }
