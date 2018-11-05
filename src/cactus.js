@@ -11,57 +11,6 @@ const SimpleGit = require('simple-git/promise');
 // Enable pretty CLI logging
 logger.cli();
 
-// Custom fill promisification because callback is not final argument
-GCH.fill[util.promisify.custom] = function(url, options) {
-  return new Promise((resolve, reject) => {
-    GCH.fill(url, (err, data) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(data);
-      }
-    }, options);
-  });
-}
-
-// Promisify apis that have cb style
-const gchAvailable = util.promisify(GCH.available);
-const gchFill = util.promisify(GCH.fill);
-
-async function getCreds(remote) {
-  const url = remote.url();
-  const credentialHelperAvailable = await gchAvailable();
-
-  if (url.startsWith('git')) {
-    return null;
-  }
-
-  if (!credentialHelperAvailable) {
-    throw new Error("Using https remote but git credentials helper not available!");
-  }
-
-  return gchFill(url, { silent: true });
-}
-
-function makeGitOpts(credentials) {
-  const options = {
-    callbacks: { certificateCheck: () => 1 }
-  };
-
-  if (credentials) {
-    // If we have credentials, use them
-    options.callbacks.credentials = (url, username) => {
-      return Git.Cred.userpassPlaintextNew(credentials.username, credentials.password);
-    }
-  } else {
-    // If we don't have credentials try to get an ssh key from the agent
-    options.callbacks.credentials = (url, username) => {
-      return Git.Cred.sshKeyFromAgent(username)
-    }
-  }
-  return options;
-}
-
 // HACK: this depends on the project being a NodeJS project
 // TODO: improve by allowing user to point you to file containing version info
 function getVersion(repoPath) {
@@ -133,11 +82,11 @@ async function cutReleaseBranch(args) {
 
   // Push master, the release branch, and tag
   logger.info(`Pushing branch ${versionInfo.releaseBranchName} & tag v${versionInfo.version}`);
-  await Promise.all([
-    clonedRepo.push('origin', 'master'),
-    clonedRepo.push('origin', versionInfo.releaseBranchName),
-    clonedRepo.pushTags('origin')
-  ]);
+
+  await clonedRepo.push('origin', 'master');
+  await clonedRepo.push('origin', `master:${versionInfo.releaseBranchName}`);
+  await clonedRepo.pushTags('origin');
+  await repo.pull();
 
   return 'Done!';
 }
@@ -164,10 +113,9 @@ async function tagVersion(args) {
 
   // Push updated release branch and new tag
   logger.info('Pushing tagged version', versionInfo.version);
-  await Promise.all([
-    repo.push(args.upstream, versionInfo.releaseBranchName),
-    repo.pushTags(args.upstream)
-  ]);
+
+  await repo.push(args.upstream, versionInfo.releaseBranchName),
+  await repo.pushTags(args.upstream)
 
   return 'Done!';
 }
