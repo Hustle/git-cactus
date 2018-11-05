@@ -5,7 +5,6 @@ const yargs = require('yargs');
 const logger = require('winston');
 const inquirer = require('inquirer');
 const semver = require('semver');
-const GCH = require('git-credential-helper');
 const SimpleGit = require('simple-git/promise');
 
 // Enable pretty CLI logging
