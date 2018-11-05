@@ -107,7 +107,7 @@ async function approveDiff(repo, currentVersion, nextVersion) {
 async function cutReleaseBranch(args) {
   // Get upstream remote for current repo
   const repo = SimpleGit();
-  const url = await repo.remote(['get-url', args.upstream]);
+  const url = (await repo.remote(['get-url', args.upstream])).trim();
 
   // Create tempdir and clone fresh copy
   const tmpdir = tmp.dirSync({ unsafeCleanup: true });
@@ -145,7 +145,7 @@ async function cutReleaseBranch(args) {
 async function tagVersion(args) {
   // Get upstream remote for current repo
   const repo = SimpleGit();
-  const remote = await repo.getRemote(args.upstream);
+  const remote = (await repo.remote(['get-url', args.upstream])).trim();
 
   // Determine the next tag for this release branch (patch)
   const currentVersion = getVersion();
