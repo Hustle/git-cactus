@@ -5,8 +5,8 @@ const yargs = require('yargs');
 const logger = require('winston');
 const inquirer = require('inquirer');
 const semver = require('semver');
-const Git = require('nodegit');
 const GCH = require('git-credential-helper');
+const SimpleGit = require('simple-git/promise');
 
 // Enable pretty CLI logging
 logger.cli();
@@ -75,29 +75,24 @@ function getVersion(repoPath) {
 // Generates the next release version given the curent version and the next level
 // Level can be 'major' or 'minor'
 function generateNextVersion(currentVersion, level) {
-  const version = semver.inc(currentVersion, level)
+  const version = semver.inc(currentVersion, level);
   const minorVer = `${semver.major(version)}.${semver.minor(version)}`;
   const releaseBranchName = `release-v${minorVer}`;
   return { version, minorVer, releaseBranchName };
 }
 
 async function approveDiff(repo, currentVersion, nextVersion) {
-  const walk = Git.Revwalk.create(repo);
   const endRange = nextVersion ? `v${nextVersion}` : 'master';
   const range = `v${currentVersion}..${endRange}`;
-  walk.pushRange(range);
-  const commits = await walk.getCommitsUntil(() => true);
+  const commits = await repo.log([range]);
 
-  console.log(`--- START COMMIT LOG ${range} ---`);
-  commits.forEach((commit) => {
-    const sha = commit.sha();
-    const msg = commit.message();
-    const author = commit.author().name();
-    const comitter = commit.committer().name();
-    const date = commit.date();
-    console.log(`[${date}] (${author}) ${msg}`);
-  });
-  console.log(`--- END COMMIT LOG ${range} ---`);
+  const message = [
+    `--- START COMMIT LOG ${range} ---`,
+    ...commits.all.map(({date, author_name, message}) => `[${date}] (${author_name}) ${message}`),
+    `--- END COMMIT LOG ${range} ---`
+  ].join('\n');
+
+  console.log(message);
 
   return await inquirer.prompt([
     {
@@ -111,18 +106,15 @@ async function approveDiff(repo, currentVersion, nextVersion) {
 
 async function cutReleaseBranch(args) {
   // Get upstream remote for current repo
-  const repo = await Git.Repository.open('.');
-  const remote = await repo.getRemote(args.upstream);
-  const credentials = await getCreds(remote);
-  const url = remote.url();
+  const repo = SimpleGit();
+  const url = await repo.remote(['get-url', args.upstream]);
 
   // Create tempdir and clone fresh copy
   const tmpdir = tmp.dirSync({ unsafeCleanup: true });
-  const options = { fetchOpts: makeGitOpts(credentials) }
 
   // Clone a fresh copy of the repository
-  const clonedRepo = await Git.Clone(url, tmpdir.name, options);
-  const clonedRemote = await clonedRepo.getRemote('origin');
+  await repo.clone(url, tmpdir.name);
+  const clonedRepo = SimpleGit(tmpdir.name);
 
   // Determine new version and branch names
   const currentVersion = getVersion(tmpdir.name);
@@ -134,7 +126,6 @@ async function cutReleaseBranch(args) {
 
   // Shell out to run npm version inside tempdir
   cp.execSync(`npm version ${args.level} -m "Release v%s"`, { cwd: tmpdir.name });
-  repo.refreshIndex();
 
   if (!approval.lgtm) {
     return 'Aborted branch cut! Phew, that was a close one...';
@@ -142,20 +133,19 @@ async function cutReleaseBranch(args) {
 
   // Push master, the release branch, and tag
   logger.info(`Pushing branch ${versionInfo.releaseBranchName} & tag v${versionInfo.version}`);
-  await clonedRemote.push([
-    `refs/heads/master:refs/heads/master`,
-    `refs/heads/master:refs/heads/${versionInfo.releaseBranchName}`,
-    `refs/tags/v${versionInfo.version}:refs/tags/v${versionInfo.version}`,
-  ], makeGitOpts(credentials));
+  await Promise.all([
+    clonedRepo.push('origin', 'master'),
+    clonedRepo.push('origin', versionInfo.releaseBranchName),
+    clonedRepo.pushTags('origin')
+  ]);
 
   return 'Done!';
 }
 
 async function tagVersion(args) {
   // Get upstream remote for current repo
-  const repo = await Git.Repository.open('.');
+  const repo = SimpleGit();
   const remote = await repo.getRemote(args.upstream);
-  const credentials = await getCreds(remote);
 
   // Determine the next tag for this release branch (patch)
   const currentVersion = getVersion();
@@ -174,10 +164,10 @@ async function tagVersion(args) {
 
   // Push updated release branch and new tag
   logger.info('Pushing tagged version', versionInfo.version);
-  await remote.push([
-    `refs/heads/${versionInfo.releaseBranchName}:refs/heads/${versionInfo.releaseBranchName}`,
-    `refs/tags/v${versionInfo.version}:refs/tags/v${versionInfo.version}`,
-  ], makeGitOpts(credentials));
+  await Promise.all([
+    repo.push(args.upstream, versionInfo.releaseBranchName),
+    repo.pushTags(args.upstream)
+  ]);
 
   return 'Done!';
 }
