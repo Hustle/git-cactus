@@ -82,10 +82,13 @@ async function cutReleaseBranch(args) {
   // Push master, the release branch, and tag
   logger.info(`Pushing branch ${versionInfo.releaseBranchName} & tag v${versionInfo.version}`);
 
+  // the remote used for the initial clone of a git repo is named origin. As far
+  // as I know, there isn't a way to change that
   await clonedRepo.push('origin', 'master');
   await clonedRepo.push('origin', `master:${versionInfo.releaseBranchName}`);
   await clonedRepo.pushTags('origin');
-  await repo.pull();
+  // Note that this is the original repo, not the cloned repo
+  await repo.pull('', '', { '--rebase': null });
 
   return 'Done!';
 }
