@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 const cactus = require('./cactus');
+const yargs = require('yargs');
+const logger = require('winston');
+logger.cli();
 
 function wrap(fn) {
   return function(args) {
