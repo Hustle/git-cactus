@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HustleInc/git-cactus.git"
+    "url": "git+https://github.com/Hustle/git-cactus.git"
   },
   "keywords": [
     "git",
@@ -20,9 +20,9 @@
   "author": "Tyler Brock",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/HustleInc/git-cactus/issues"
+    "url": "https://github.com/Hustle/git-cactus/issues"
   },
-  "homepage": "https://github.com/HustleInc/git-cactus#readme",
+  "homepage": "https://github.com/Hustle/git-cactus#readme",
   "dependencies": {
     "inquirer": "^5.1.0",
     "semver": "^5.6.0",
