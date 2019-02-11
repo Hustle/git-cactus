@@ -88,7 +88,7 @@ async function cutReleaseBranch(args) {
   await clonedRepo.push('origin', `master:${versionInfo.releaseBranchName}`);
   await clonedRepo.pushTags('origin');
   // Note that this is the original repo, not the cloned repo
-  await repo.pull(args.upstream, '', { '--rebase': null });
+  await repo.pull(args.upstream, { '--rebase': null });
 
   return 'Done!';
 }
