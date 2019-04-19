@@ -102,9 +102,6 @@ async function tagVersion(args) {
   const currentVersion = getVersion();
   const versionInfo = generateNextVersion(currentVersion, 'patch');
 
-  // Shell out to run npm version
-  cp.execSync('npm version patch -m "Release v%s"');
-
   // Ask for approval on diff before pushing
   logger.info('Tagging version', versionInfo.version);
   const approval = await approveDiff(repo, currentVersion, versionInfo.version);
@@ -112,6 +109,9 @@ async function tagVersion(args) {
   if (!approval.lgtm) {
     return 'Aborted push! Local changes not reverted, you must now do surgery!';
   }
+
+  // Shell out to run npm version
+  cp.execSync('npm version patch -m "Release v%s"');
 
   // Push updated release branch and new tag
   logger.info('Pushing tagged version', versionInfo.version);
