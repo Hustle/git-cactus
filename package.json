@@ -1,6 +1,6 @@
 {
   "name": "git-cactus",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "A opinionated tool for cutting releases",
   "main": "index.js",
   "bin": {
