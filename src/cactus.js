@@ -29,8 +29,8 @@ function generateNextVersion(currentVersion, level) {
   return { version, minorVer, releaseBranchName };
 }
 
-async function approveDiff(repo, currentVersion) {
-  const range = `v${currentVersion}..master`;
+async function approveDiff(repo, currentVersion, endRange = 'master') {
+  const range = `v${currentVersion}..${endRange}`;
   const commits = await repo.log([range]);
 
   const message = [
@@ -103,10 +103,10 @@ async function tagVersion(args) {
 
   // Ask for approval on diff before pushing
   logger.info('Tagging version', versionInfo.version);
-  const approval = await approveDiff(repo, currentVersion);
+  const approval = await approveDiff(repo, currentVersion, 'HEAD');
 
   if (!approval.lgtm) {
-    return 'Aborted push! Local changes not reverted, you must now do surgery!';
+    return 'Aborted push! Local changes reverted, you must now do surgery!';
   }
 
   // Shell out to run npm version
