@@ -29,7 +29,7 @@ function generateNextVersion(currentVersion, level) {
   return { version, minorVer, releaseBranchName };
 }
 
-async function approveDiff(repo, currentVersion, endRange = 'master') {
+async function approveDiff(repo, currentVersion, endRange) {
   const range = `v${currentVersion}..${endRange}`;
   const commits = await repo.log([range]);
 
@@ -69,7 +69,7 @@ async function cutReleaseBranch(args) {
 
   // Ask for approval on diff before cutting
   logger.info('Cutting branch', versionInfo.releaseBranchName);
-  const approval = await approveDiff(repo, currentVersion);
+  const approval = await approveDiff(repo, currentVersion, args.master);
 
   // Shell out to run npm version inside tempdir
   cp.execSync(`npm version ${args.level} -m "Release v%s"`, { cwd: tmpdir.name });
@@ -83,8 +83,8 @@ async function cutReleaseBranch(args) {
 
   // the remote used for the initial clone of a git repo is named origin. As far
   // as I know, there isn't a way to change that
-  await clonedRepo.push('origin', 'master');
-  await clonedRepo.push('origin', `master:${versionInfo.releaseBranchName}`);
+  await clonedRepo.push('origin', args.master);
+  await clonedRepo.push('origin', `${args.master}:${versionInfo.releaseBranchName}`);
   await clonedRepo.pushTags('origin');
   // Note that this is the original repo, not the cloned repo
   await repo.pull(args.upstream, { '--rebase': null });

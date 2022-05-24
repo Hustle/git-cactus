@@ -24,6 +24,8 @@ yargs
   .command('tag', 'tags a version on a release branch', () => {}, wrap(cactus.tagVersion))
   .group(['upstream'], 'Git Options:')
   .option('upstream', { default: 'origin', describe: 'Upstream remote name'})
+  .group(['master'], 'Git Options:')
+  .option('master', { default: 'master', describe: 'The name of the default/primary branch'})
   .example('git cactus cut', 'Cuts a new release branch (minor)')
   .example('git cactus tag', 'Tags a new version (patch)')
   .argv
